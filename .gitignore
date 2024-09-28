@@ -1,0 +1,14 @@
+# Ignore everything
+*
+
+# Except the Core directory
+!/Core/
+!/Core/**
+!/.settings/
+!/.settings/**
+
+# Except .ioc files
+!*.ioc
+!*.cproject
+!*.mxproject
+!*.project

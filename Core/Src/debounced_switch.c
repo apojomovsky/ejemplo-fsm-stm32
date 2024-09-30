@@ -5,43 +5,54 @@
  *      Author: apojo
  */
 
-
 #include "debounced_switch.h"
-#include "main.h"
+#include "timer.h"
 
-// Define the outputs for each state
-unsigned long SwitchOffOutputs[] = {0};  // Switch is not pressed
-unsigned long SwitchOnOutputs[] = {1};   // Switch is pressed
+// Condition functions for state transitions
+int is_button_pressed(void *context) {
+    DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
+    return HAL_GPIO_ReadPin(debounced_switch->GPIOx, debounced_switch->GPIO_Pin) == GPIO_PIN_SET;
+}
 
-// Define state transitions for the switch
-unsigned long IdleNext[] = {SWITCH_IDLE, SWITCH_PRESSED};
-unsigned long PressedNext[] = {SWITCH_RELEASED, SWITCH_PRESSED};
-unsigned long ReleasedNext[] = {SWITCH_IDLE, SWITCH_PRESSED};
+int has_timer_expired(void *context) {
+    DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
+    return timer_has_expired(&debounced_switch->debounce_timer);
+}
 
-// FSM states for the debounced switch
-const FSMState DebouncedSwitchFSM[] = {
-    {SwitchOffOutputs, 1, IdleNext, 2},
-    {SwitchOnOutputs, 1, PressedNext, 2},
-    {SwitchOffOutputs, 1, ReleasedNext, 2}
+// Transition arrays for each state
+Transition IdleTransitions[] = {
+    {is_button_pressed, SWITCH_PRESSED}
 };
 
-// Initialize the FSM for the debounced switch
-void debounced_switch_init(FSM *fsm) {
-    fsm_init(fsm, DebouncedSwitchFSM, SWITCH_IDLE);
+Transition PressedTransitions[] = {
+    {has_timer_expired, SWITCH_RELEASED}
+};
+
+Transition ReleasedTransitions[] = {
+    {has_timer_expired, SWITCH_IDLE}
+};
+
+// FSM states
+FSMState DebouncedSwitchFSM[] = {
+    {IdleTransitions, 1, NULL},           // SWITCH_IDLE state
+    {PressedTransitions, 1, NULL},        // SWITCH_PRESSED state
+    {ReleasedTransitions, 1, NULL}        // SWITCH_RELEASED state
+};
+
+// Initialize the debounced switch FSM
+void debounced_switch_init(DebouncedSwitch *debounced_switch, GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
+    fsm_init(&debounced_switch->fsm, DebouncedSwitchFSM, SWITCH_IDLE, debounced_switch);  // Pass context
+    debounced_switch->GPIOx = GPIOx;
+    debounced_switch->GPIO_Pin = GPIO_Pin;
+    timer_start(&debounced_switch->debounce_timer, 50);  // Example: Start debounce timer for 50ms
 }
 
-// Read the switch state (1 if pressed, 0 if not)
-int read_switch(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
-    return HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_SET ? 1 : 0;
+// Update the FSM
+void debounced_switch_update(DebouncedSwitch *debounced_switch) {
+    fsm_update(&debounced_switch->fsm);
 }
 
-// Handle the outputs (for this example, we don't need complex output handling)
-void set_switch_output(unsigned long *outputs, unsigned long num_outputs) {
-    // Here we could handle multiple outputs, but for a button it's binary (pressed or not)
+// Get the debounced GPIO state
+GPIO_PinState get_debounced_switch_state(DebouncedSwitch *debounced_switch) {
+    return (debounced_switch->fsm.currentState == SWITCH_PRESSED) ? GPIO_PIN_RESET : GPIO_PIN_SET;
 }
-
-// Get the debounced GPIO state based on FSM state
-GPIO_PinState get_debounced_state(FSM *fsm) {
-    return (fsm->CurrentState == SWITCH_PRESSED) ? GPIO_PIN_RESET : GPIO_PIN_SET;
-}
-

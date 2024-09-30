@@ -9,42 +9,44 @@
 #define INC_DEBOUNCED_SWITCH_H_
 
 #include "fsm.h"
-#include <main.h>
-#include <stdint.h>
+#include "timer.h"
 
-// Enum representing the debounced switch states
 typedef enum {
     SWITCH_IDLE,
     SWITCH_PRESSED,
     SWITCH_RELEASED
-} DebouncedSwitchStates;
+} SwitchState;
+
+// Structure to hold the debounced switch FSM and associated data
+typedef struct {
+    FSM fsm;               // FSM instance
+    Timer debounce_timer;   // Timer for debouncing
+    GPIO_TypeDef *GPIOx;    // GPIO port for the switch
+    uint16_t GPIO_Pin;      // GPIO pin for the switch
+} DebouncedSwitch;
 
 /**
- * @brief Initializes the FSM for the debounced switch.
- * @param fsm Pointer to the FSM structure.
- */
-void debounced_switch_init(FSM *fsm);
-
-/**
- * @brief Reads the current state of the switch (raw).
+ * @brief Initializes the debounced switch FSM.
+ *
+ * @param debounced_switch Pointer to DebouncedSwitch structure.
  * @param GPIOx GPIO port of the switch.
  * @param GPIO_Pin GPIO pin of the switch.
- * @return 1 if the switch is pressed, 0 otherwise.
  */
-int read_switch(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void debounced_switch_init(DebouncedSwitch *debounced_switch, GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 
 /**
- * @brief Sets the debounced switch output (used by FSM).
- * @param outputs The FSM state's outputs.
- * @param num_outputs The number of outputs.
+ * @brief Updates the debounced switch FSM.
+ *
+ * @param debounced_switch Pointer to DebouncedSwitch structure.
  */
-void set_switch_output(unsigned long *outputs, unsigned long num_outputs);
+void debounced_switch_update(DebouncedSwitch *debounced_switch);
 
 /**
- * @brief Get the GPIO pin state based on the FSM state.
- * @param fsm Pointer to the FSM structure.
+ * @brief Gets the debounced GPIO state.
+ *
+ * @param debounced_switch Pointer to DebouncedSwitch structure.
  * @return GPIO_PIN_SET or GPIO_PIN_RESET based on the debounced state.
  */
-GPIO_PinState get_debounced_state(FSM *fsm);
+GPIO_PinState get_debounced_switch_state(DebouncedSwitch *debounced_switch);
 
 #endif /* INC_DEBOUNCED_SWITCH_H_ */

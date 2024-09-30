@@ -8,20 +8,28 @@
 #include "fsm.h"
 
 /**
- * @brief Initializes the FSM.
+ * @brief Initializes the FSM with given states, initial state, and context.
  */
-void fsm_init(FSM *fsm, const FSMState *states, unsigned long initial_state) {
-    fsm->States = states;
-    fsm->CurrentState = initial_state;
+void fsm_init(FSM *fsm, const FSMState *states, unsigned long initial_state, void *context) {
+    fsm->states = states;
+    fsm->currentState = initial_state;
+    fsm->context = context;  // Set the context for the FSM
 }
 
 /**
- * @brief Updates the FSM based on the input.
+ * @brief Updates the FSM based on the conditions of the current state.
  */
-void fsm_update(FSM *fsm, unsigned long input, void (*set_output)(unsigned long *, unsigned long)) {
-    // Update the current state based on input and set the outputs
-    if (input < fsm->States[fsm->CurrentState].NumInputs) {
-        fsm->CurrentState = fsm->States[fsm->CurrentState].Next[input];
-        set_output(fsm->States[fsm->CurrentState].Outputs, fsm->States[fsm->CurrentState].NumOutputs);
+void fsm_update(FSM *fsm) {
+    FSMState currentState = fsm->states[fsm->currentState];
+
+    // Check all transitions
+    for (unsigned long i = 0; i < currentState.numTransitions; i++) {
+        if (currentState.transitions[i].condition(fsm->context)) {  // Pass the context to the condition function
+            fsm->currentState = currentState.transitions[i].nextState;  // Transition to the corresponding next state
+            if (currentState.action) {
+                currentState.action();  // Execute the state's action if defined
+            }
+            return;  // Exit after the first matched condition
+        }
     }
 }

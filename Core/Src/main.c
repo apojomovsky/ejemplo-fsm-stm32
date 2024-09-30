@@ -43,8 +43,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-FSM switch1_fsm;
-FSM switch2_fsm;
+DebouncedSwitch debounced_button1, debounced_button2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,27 +88,21 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  debounced_switch_init(&switch1_fsm);
-  debounced_switch_init(&switch2_fsm);
+  // Initialize debounced buttons
+  debounced_switch_init(&debounced_button1, SW_1_GPIO_Port, SW_1_Pin);
+  debounced_switch_init(&debounced_button2, SW_2_GPIO_Port, SW_2_Pin);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	debounced_switch_update(&debounced_button1);
+	debounced_switch_update(&debounced_button2);
 
-	// Update FSM for SW_1
-	unsigned long input1 = read_switch(SW_1_GPIO_Port, SW_1_Pin);
-	fsm_update(&switch1_fsm, input1, set_switch_output);
-
-	// Update FSM for SW_2
-	unsigned long input2 = read_switch(SW_2_GPIO_Port, SW_2_Pin);
-	fsm_update(&switch2_fsm, input2, set_switch_output);
-
-	// Use get_debounced_state to control LEDs
-	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, get_debounced_state(&switch1_fsm));
-	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, get_debounced_state(&switch2_fsm));
-
+	// Update LED state based on debounced button state
+	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, get_debounced_switch_state(&debounced_button1));
+	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, get_debounced_switch_state(&debounced_button2));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

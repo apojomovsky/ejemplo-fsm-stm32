@@ -25,3 +25,10 @@ void timer_start(Timer *timer, uint32_t duration_ms) {
 int timer_has_expired(Timer *timer) {
     return (HAL_GetTick() - timer->start_tick >= timer->timeout_duration);
 }
+
+/**
+ * @brief Updates the timer duration without resetting the start tick.
+ */
+void timer_update_duration(Timer *timer, uint32_t new_duration_ms) {
+    timer->timeout_duration = new_duration_ms;
+}

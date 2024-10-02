@@ -21,8 +21,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "debounced_switch.h"
+#include <string.h>
+#include <stdio.h>
 
+#include "debounced_switch.h"
+#include "edge_fsm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,20 +44,80 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 DebouncedSwitch debounced_button1, debounced_button2;
+EdgeDetector edge_fsm1;
+EdgeFSMState edge;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void UART_SendString(char* str) {
+    HAL_UART_Transmit(&huart1, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+}
+
+void send_edge_detector_status(EdgeFSMState edge_state) {
+    char buffer[50];  // Buffer for the string output
+    const char *edge_state_str;
+
+    // Map EdgeFSMState to a string
+    switch (edge_state) {
+        case NO_EDGE:
+            edge_state_str = "NO_EDGE";
+            break;
+        case RISING_EDGE:
+            edge_state_str = "RISING_EDGE";
+            break;
+        case FALLING_EDGE:
+            edge_state_str = "FALLING_EDGE";
+            break;
+        default:
+            edge_state_str = "UNKNOWN";
+    }
+
+    // Format the message with the edge state string
+    sprintf(buffer, "Edge Detector State: %s\r\n", edge_state_str);
+
+    // Send the buffer over UART
+    HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
+}
+
+void print_debounced_switch_state_uart(DebouncedSwitch *debounced_switch) {
+    char buffer[50];
+    const char *state_str;
+
+    // Get the debounced switch state as a string
+    switch (debounced_switch->fsm.currentState) {
+        case SWITCH_IDLE:
+            state_str = "SWITCH_IDLE";
+            break;
+        case SWITCH_PRESSED:
+            state_str = "SWITCH_PRESSED";
+            break;
+        case SWITCH_RELEASED:
+            state_str = "SWITCH_RELEASED";
+            break;
+        default:
+            state_str = "UNKNOWN_STATE";
+            break;
+    }
+
+    // Format the string into the buffer
+    sprintf(buffer, "Debounced Switch State: %s\r\n", state_str);
+
+    // Send the buffer over UART
+    HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+}
 
 /* USER CODE END 0 */
 
@@ -87,22 +150,40 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   // Initialize debounced buttons
   debounced_switch_init(&debounced_button1, SW_1_GPIO_Port, SW_1_Pin);
   debounced_switch_init(&debounced_button2, SW_2_GPIO_Port, SW_2_Pin);
+  edge_detector_init(&edge_fsm1, &debounced_button1);
+
+  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+//  char buffer[100];  // Buffer to hold the formatted string
   while (1)
   {
 	debounced_switch_update(&debounced_button1);
 	debounced_switch_update(&debounced_button2);
+    edge_detector_update(&edge_fsm1);
+    edge = get_edge_detector_edge(&edge_fsm1);
 
+//    print_debounced_switch_state_uart(&debounced_button1);
+    send_edge_detector_status(edge);
+
+//    if (edge == RISING_EDGE) {
+//        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);  // Turn on LED on rising edge
+//    } else if (edge == FALLING_EDGE) {
+//        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);  // Turn off LED on falling edge
+//    }
+    HAL_Delay(100);
 	// Update LED state based on debounced button state
-	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, get_debounced_switch_state(&debounced_button1));
-	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, get_debounced_switch_state(&debounced_button2));
+//	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, get_debounced_switch_state(&debounced_button1));
+//	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, get_debounced_switch_state(&debounced_button2));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -147,6 +228,39 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -160,6 +274,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);

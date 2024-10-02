@@ -13,7 +13,7 @@
 void fsm_init(FSM *fsm, const FSMState *states, unsigned long initial_state, void *context) {
     fsm->states = states;
     fsm->currentState = initial_state;
-    fsm->context = context;  // Set the context for the FSM
+    fsm->context = context;
 }
 
 /**
@@ -27,7 +27,7 @@ void fsm_update(FSM *fsm) {
         if (currentState.transitions[i].condition(fsm->context)) {  // Pass the context to the condition function
             fsm->currentState = currentState.transitions[i].nextState;  // Transition to the corresponding next state
             if (currentState.action) {
-                currentState.action();  // Execute the state's action if defined
+                currentState.action(fsm->context);  // Pass the context to the action function
             }
             return;  // Exit after the first matched condition
         }

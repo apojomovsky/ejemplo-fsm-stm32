@@ -34,4 +34,12 @@ void timer_start(Timer *timer, uint32_t duration_ms);
  */
 int timer_has_expired(Timer *timer);
 
+/**
+ * @brief Updates the timer duration without resetting the start tick.
+ *
+ * @param timer Pointer to the Timer structure.
+ * @param new_duration_ms New duration for the timer in milliseconds.
+ */
+void timer_update_duration(Timer *timer, uint32_t new_duration_ms);
+
 #endif /* INC_TIMER_H_ */

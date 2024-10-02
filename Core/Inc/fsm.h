@@ -13,6 +13,9 @@
 // Define a function pointer type for condition functions with context
 typedef int (*ConditionFunc)(void *context);
 
+// Define a function pointer type for action functions with context
+typedef void (*ActionFunc)(void *context);
+
 // Define a Transition structure to pair conditions with next states
 typedef struct {
     ConditionFunc condition;  // Condition function
@@ -22,13 +25,13 @@ typedef struct {
 typedef struct {
     Transition *transitions;  // Array of transitions (condition -> next state)
     unsigned long numTransitions; // Number of transitions
-    void (*action)(void);     // Action to be executed on entering the state
+    ActionFunc action;        // Action to be executed on entering the state
 } FSMState;
 
 typedef struct {
     const FSMState *states;
     unsigned long currentState;
-    void *context;  // Context to pass to condition functions
+    void *context;  // Context to pass to condition and action functions
 } FSM;
 
 /**

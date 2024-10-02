@@ -11,11 +11,14 @@
 #include "fsm.h"
 #include "debounced_switch.h"
 
+// Enum for the edge detector states
 typedef enum {
-    NO_EDGE,         // No edge detected
-    RISING_EDGE,     // Rising edge detected
-    FALLING_EDGE     // Falling edge detected
+    IDLE_HIGH,      // Idle with input high
+    IDLE_LOW,       // Idle with input low
+    RISING_EDGE,    // Rising edge detected
+    FALLING_EDGE    // Falling edge detected
 } EdgeFSMState;
+
 
 typedef struct {
     FSM fsm;               // FSM instance for edge detection
@@ -31,7 +34,7 @@ typedef struct {
 void edge_detector_init(EdgeDetector *edge_detector, DebouncedSwitch *switch_instance);
 
 /**
- * @brief Updates the edge detector FSM.
+ * @brief Updates the edge detector FSM to detect rising or falling edges.
  *
  * @param edge_detector Pointer to the EdgeDetector structure.
  */
@@ -40,9 +43,9 @@ void edge_detector_update(EdgeDetector *edge_detector);
 /**
  * @brief Gets the last detected edge.
  *
- * @param edge_detector Pointer to the EdgeDetector structure.
- * @return EdgeFSMState The last detected edge (RISING_EDGE, FALLING_EDGE, NO_EDGE).
+ * @param edge_detector Pointer to the EdgeFSM structure.
+ * @return EdgeFSMState The current FSM state.
  */
-EdgeFSMState get_edge_detector_edge(EdgeDetector *edge_detector);
+EdgeFSMState get_edge_detector_state(EdgeDetector *edge_detector);
 
 #endif /* INC_EDGE_FSM_H_ */

@@ -72,7 +72,8 @@ void send_edge_detector_status(EdgeFSMState edge_state) {
 
     // Map EdgeFSMState to a string
     switch (edge_state) {
-        case NO_EDGE:
+        case IDLE_HIGH:
+        case IDLE_LOW:
             edge_state_str = "NO_EDGE";
             break;
         case RISING_EDGE:
@@ -170,7 +171,7 @@ int main(void)
 	debounced_switch_update(&debounced_button1);
 	debounced_switch_update(&debounced_button2);
     edge_detector_update(&edge_fsm1);
-    edge = get_edge_detector_edge(&edge_fsm1);
+    edge = get_edge_detector_state(&edge_fsm1);
 
 //    print_debounced_switch_state_uart(&debounced_button1);
     send_edge_detector_status(edge);

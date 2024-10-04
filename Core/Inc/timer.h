@@ -15,7 +15,7 @@
  */
 typedef struct {
     uint32_t start_tick;
-    uint32_t timeout_duration;
+    uint32_t duration_ms;
 } Timer;
 
 /**
@@ -25,6 +25,13 @@ typedef struct {
  * @param duration_ms Duration of the timer in milliseconds.
  */
 void timer_start(Timer *timer, uint32_t duration_ms);
+
+/**
+ * @brief Restarts a timer.
+ *
+ * @param timer Pointer to the Timer structure.
+ */
+void timer_restart(Timer *timer);
 
 /**
  * @brief Checks if the timer has expired.

@@ -14,7 +14,14 @@
  */
 void timer_start(Timer *timer, uint32_t duration_ms) {
     timer->start_tick = HAL_GetTick();    // Store the current tick
-    timer->timeout_duration = duration_ms; // Set the timeout duration
+    timer->duration_ms = duration_ms; // Set the timeout duration
+}
+
+/**
+ * @brief Starts a timer for the specified duration in milliseconds.
+ */
+void timer_restart(Timer *timer) {
+    timer->start_tick = HAL_GetTick();
 }
 
 /**
@@ -23,12 +30,12 @@ void timer_start(Timer *timer, uint32_t duration_ms) {
  * @return 1 if the timer has expired, 0 if not.
  */
 int timer_has_expired(Timer *timer) {
-    return (HAL_GetTick() - timer->start_tick >= timer->timeout_duration);
+    return (HAL_GetTick() - timer->start_tick >= timer->duration_ms);
 }
 
 /**
  * @brief Updates the timer duration without resetting the start tick.
  */
 void timer_update_duration(Timer *timer, uint32_t new_duration_ms) {
-    timer->timeout_duration = new_duration_ms;
+    timer->duration_ms = new_duration_ms;
 }

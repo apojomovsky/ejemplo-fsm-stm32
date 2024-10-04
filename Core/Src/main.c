@@ -26,6 +26,8 @@
 
 #include "debounced_switch.h"
 #include "edge_fsm.h"
+#include "blink_control.h"
+#include "timer_period_manager.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,8 +50,9 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 DebouncedSwitch debounced_button1, debounced_button2;
-EdgeDetector edge_fsm1;
-EdgeFSMState edge;
+EdgeDetector edge_detector1, edge_detector2;
+BlinkControl blink_control_led1, blink_control_led2;
+TimerPeriodManagerFSM period_manager1, period_manager2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,67 +60,127 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void UART_SendString(char* str) {
-    HAL_UART_Transmit(&huart1, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-}
+//	void UART_SendString(char* str) {
+//		HAL_UART_Transmit(&huart1, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+//	}
+//
+//void send_edge_detector_status(EdgeFSMState edge_state) {
+//	char buffer[50];  // Buffer for the string output
+//	const char *edge_state_str;
+//
+//	// Map EdgeFSMState to a string
+//	switch (edge_state) {
+//		case IDLE_HIGH:
+//		case IDLE_LOW:
+//			edge_state_str = "NO_EDGE";
+//			break;
+//		case RISING_EDGE:
+//			edge_state_str = "RISING_EDGE";
+//			break;
+//		case FALLING_EDGE:
+//			edge_state_str = "FALLING_EDGE";
+//			break;
+//		default:
+//			edge_state_str = "UNKNOWN";
+//	}
+//
+//	// Format the message with the edge state string
+//	sprintf(buffer, "Edge Detector State: %s\r\n", edge_state_str);
+//
+//	// Send the buffer over UART
+//	HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
+//}
+//
+//void print_debounced_switch_state_uart(DebouncedSwitch *debounced_switch) {
+//	char buffer[50];
+//	const char *state_str;
+//
+//	// Get the debounced switch state as a string
+//	switch (debounced_switch->fsm.currentState) {
+//		case SWITCH_IDLE:
+//			state_str = "SWITCH_IDLE";
+//			break;
+//		case SWITCH_PRESSED:
+//			state_str = "SWITCH_PRESSED";
+//			break;
+//		case SWITCH_RELEASED:
+//			state_str = "SWITCH_RELEASED";
+//			break;
+//		default:
+//			state_str = "UNKNOWN_STATE";
+//			break;
+//	}
+//
+//	// Format the string into the buffer
+//	sprintf(buffer, "Debounced Switch State: %s\r\n", state_str);
+//
+//	// Send the buffer over UART
+//	HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+//}
+//
+//void send_blink_control_status(BlinkControl *blink_control) {
+//    char buffer[50];  // Buffer for the string output
+//    const char *blink_state_str;
+//
+//    // Map BlinkState to a string
+//    switch (blink_control->fsm.currentState) {
+//        case LED_OFF:
+//            blink_state_str = "LED_OFF";
+//            break;
+//        case LED_ON:
+//            blink_state_str = "LED_ON";
+//            break;
+//        default:
+//            blink_state_str = "UNKNOWN_STATE";
+//            break;
+//    }
+//
+//    // Format the message with the blink state string
+//    sprintf(buffer, "Blink Control State: %s\r\n", blink_state_str);
+//
+//    // Send the buffer over UART
+//    HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
+//}
 
-void send_edge_detector_status(EdgeFSMState edge_state) {
-    char buffer[50];  // Buffer for the string output
-    const char *edge_state_str;
-
-    // Map EdgeFSMState to a string
-    switch (edge_state) {
-        case IDLE_HIGH:
-        case IDLE_LOW:
-            edge_state_str = "NO_EDGE";
-            break;
-        case RISING_EDGE:
-            edge_state_str = "RISING_EDGE";
-            break;
-        case FALLING_EDGE:
-            edge_state_str = "FALLING_EDGE";
-            break;
-        default:
-            edge_state_str = "UNKNOWN";
-    }
-
-    // Format the message with the edge state string
-    sprintf(buffer, "Edge Detector State: %s\r\n", edge_state_str);
-
-    // Send the buffer over UART
-    HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-}
-
-void print_debounced_switch_state_uart(DebouncedSwitch *debounced_switch) {
-    char buffer[50];
+// Send TimerPeriodManagerFSM state over UART
+void send_timer_period_manager_fsm_status(TimerPeriodManagerFSM *period_manager) {
+    char buffer[100];
     const char *state_str;
 
-    // Get the debounced switch state as a string
-    switch (debounced_switch->fsm.currentState) {
-        case SWITCH_IDLE:
-            state_str = "SWITCH_IDLE";
+    // Map FSM states to strings
+    switch (period_manager->fsm.currentState) {
+        case PERIOD_1_STATE:
+            state_str = "PERIOD_1_STATE";
             break;
-        case SWITCH_PRESSED:
-            state_str = "SWITCH_PRESSED";
+        case PERIOD_2_STATE:
+            state_str = "PERIOD_2_STATE";
             break;
-        case SWITCH_RELEASED:
-            state_str = "SWITCH_RELEASED";
+        case PERIOD_3_STATE:
+            state_str = "PERIOD_3_STATE";
             break;
         default:
             state_str = "UNKNOWN_STATE";
             break;
     }
 
-    // Format the string into the buffer
-    sprintf(buffer, "Debounced Switch State: %s\r\n", state_str);
+    // Format the string
+    sprintf(buffer, "TimerPeriodManagerFSM State: %s\r\n", state_str);
 
     // Send the buffer over UART
-    HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+}
+
+void print_timer_expiration_period(Timer *timer) {
+    char buffer[50];
+    // Format the string with the timer's expiration period in milliseconds
+    sprintf(buffer, "Timer Expiration Period: %lu ms\r\n", timer->duration_ms);
+
+	HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
 }
 
 /* USER CODE END 0 */
@@ -156,35 +219,26 @@ int main(void)
   // Initialize debounced buttons
   debounced_switch_init(&debounced_button1, SW_1_GPIO_Port, SW_1_Pin);
   debounced_switch_init(&debounced_button2, SW_2_GPIO_Port, SW_2_Pin);
-  edge_detector_init(&edge_fsm1, &debounced_button1);
-
-  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-
+  blink_control_init(&blink_control_led1, LED_1_GPIO_Port, LED_1_Pin, 0);
+  blink_control_init(&blink_control_led2, LED_2_GPIO_Port, LED_2_Pin, 0);
+  edge_detector_init(&edge_detector1, &debounced_button1);
+  edge_detector_init(&edge_detector2, &debounced_button2);
+  timer_period_manager_fsm_init(&period_manager1, &blink_control_led1.blink_timer, &edge_detector1);
+  timer_period_manager_fsm_init(&period_manager2, &blink_control_led2.blink_timer, &edge_detector2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//  char buffer[100];  // Buffer to hold the formatted string
   while (1)
   {
 	debounced_switch_update(&debounced_button1);
 	debounced_switch_update(&debounced_button2);
-    edge_detector_update(&edge_fsm1);
-    edge = get_edge_detector_state(&edge_fsm1);
-
-//    print_debounced_switch_state_uart(&debounced_button1);
-    send_edge_detector_status(edge);
-
-//    if (edge == RISING_EDGE) {
-//        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);  // Turn on LED on rising edge
-//    } else if (edge == FALLING_EDGE) {
-//        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);  // Turn off LED on falling edge
-//    }
-    HAL_Delay(100);
-	// Update LED state based on debounced button state
-//	HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, get_debounced_switch_state(&debounced_button1));
-//	HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, get_debounced_switch_state(&debounced_button2));
+    edge_detector_update(&edge_detector1);
+    edge_detector_update(&edge_detector2);
+    blink_control_update(&blink_control_led1);
+    blink_control_update(&blink_control_led2);
+    timer_period_manager_fsm_update(&period_manager1);
+    timer_period_manager_fsm_update(&period_manager2);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -308,6 +362,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  *   None
+  * @retval None
+  */
 
 /* USER CODE END 4 */
 

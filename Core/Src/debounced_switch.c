@@ -11,12 +11,15 @@
 // Condition functions for state transitions
 static int is_button_pressed(void *context) {
     DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
-    return HAL_GPIO_ReadPin(debounced_switch->GPIOx, debounced_switch->GPIO_Pin) == GPIO_PIN_SET;
-}
+    return HAL_GPIO_ReadPin(debounced_switch->GPIOx, debounced_switch->GPIO_Pin) == GPIO_PIN_SET;}
 
-static int has_timer_expired(void *context) {
+static int is_button_pressed_and_timer_expired(void *context) {
     DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
-    return timer_has_expired(&debounced_switch->debounce_timer);
+    return timer_has_expired(&debounced_switch->debounce_timer) && HAL_GPIO_ReadPin(debounced_switch->GPIOx, debounced_switch->GPIO_Pin) == GPIO_PIN_SET;}
+
+static int is_button_released_and_timer_expired(void *context) {
+    DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
+    return timer_has_expired(&debounced_switch->debounce_timer) && HAL_GPIO_ReadPin(debounced_switch->GPIOx, debounced_switch->GPIO_Pin) == GPIO_PIN_RESET;
 }
 
 // Transition arrays for each state
@@ -25,18 +28,33 @@ static Transition IdleTransitions[] = {
 };
 
 static Transition PressedTransitions[] = {
-    {has_timer_expired, SWITCH_RELEASED}
+    {is_button_released_and_timer_expired, SWITCH_RELEASED}
 };
 
 static Transition ReleasedTransitions[] = {
-    {has_timer_expired, SWITCH_PRESSED}
+    {is_button_pressed_and_timer_expired, SWITCH_PRESSED}
 };
 
-// FSM states
+// on_state functions for each state
+void on_state_idle(void *context) {
+    // No specific actions for the idle state
+}
+
+void on_state_pressed(void *context) {
+    DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
+    timer_start(&debounced_switch->debounce_timer, 50);  // Start debounce timer
+}
+
+void on_state_released(void *context) {
+    DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
+    timer_start(&debounced_switch->debounce_timer, 50);  // Start debounce timer
+}
+
+// FSM states with actions
 static FSMState DebouncedSwitchFSM[] = {
-    {IdleTransitions, 1, NULL},           // SWITCH_IDLE state
-    {PressedTransitions, 1, NULL},        // SWITCH_PRESSED state
-    {ReleasedTransitions, 1, NULL}        // SWITCH_RELEASED state
+    {IdleTransitions, 1, on_state_idle},           // SWITCH_IDLE state
+    {PressedTransitions, 1, on_state_pressed},     // SWITCH_PRESSED state
+    {ReleasedTransitions, 1, on_state_released}    // SWITCH_RELEASED state
 };
 
 // Initialize the debounced switch FSM
@@ -51,35 +69,9 @@ void debounced_switch_init(DebouncedSwitch *debounced_switch, GPIO_TypeDef *GPIO
 void debounced_switch_update(DebouncedSwitch *debounced_switch) {
     // Perform state transitions
     fsm_update(&debounced_switch->fsm);
-
-    // Handle timer logic within each state
-    switch (debounced_switch->fsm.currentState) {
-        case SWITCH_PRESSED:
-            if (has_timer_expired(debounced_switch)) {
-                if (!is_button_pressed(debounced_switch)) {
-                    // Button was released after debounce, transition to released state
-                    timer_start(&debounced_switch->debounce_timer, 50);
-                    debounced_switch->fsm.currentState = SWITCH_RELEASED;
-                }
-            }
-            break;
-
-        case SWITCH_RELEASED:
-            if (has_timer_expired(debounced_switch)) {
-                if (is_button_pressed(debounced_switch)) {
-                    // Button was pressed again, transition back to pressed state
-                    timer_start(&debounced_switch->debounce_timer, 50);
-                    debounced_switch->fsm.currentState = SWITCH_PRESSED;
-                }
-            }
-            break;
-
-        default:
-            break;
-    }
 }
 
 // Get the debounced GPIO state
 GPIO_PinState get_debounced_switch_state(DebouncedSwitch *debounced_switch) {
-    return (debounced_switch->fsm.currentState == SWITCH_PRESSED) ? GPIO_PIN_RESET : GPIO_PIN_SET;
+    return (debounced_switch->fsm.currentState == SWITCH_PRESSED) ? GPIO_PIN_SET : GPIO_PIN_RESET;
 }

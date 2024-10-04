@@ -18,6 +18,23 @@ static int is_low(void *context) {
     return get_debounced_switch_state(edge_detector->switch_instance) == GPIO_PIN_RESET;
 }
 
+// on_state functions for each state
+void on_state_idle_high(void *context) {
+    // No specific action required for idle_high
+}
+
+void on_state_idle_low(void *context) {
+    // No specific action required for idle_low
+}
+
+void on_state_rising_edge(void *context) {
+    // Edge detected, execute any necessary actions (logging, etc.)
+}
+
+void on_state_falling_edge(void *context) {
+    // Edge detected, execute any necessary actions (logging, etc.)
+}
+
 // Transition arrays for each state
 static Transition IdleHighTransitions[] = {
     {is_low, FALLING_EDGE}   // Transition to FALLING_EDGE on low input
@@ -37,12 +54,12 @@ static Transition FallingEdgeTransitions[] = {
     {is_high, RISING_EDGE}   // Transition to RISING_EDGE on high input
 };
 
-// FSM states
+// FSM states with action functions
 static FSMState EdgeFSMStates[] = {
-    {IdleHighTransitions, 1, NULL},         // IDLE_HIGH state
-    {IdleLowTransitions, 1, NULL},          // IDLE_LOW state
-    {RisingEdgeTransitions, 2, NULL},       // RISING_EDGE state
-    {FallingEdgeTransitions, 2, NULL}       // FALLING_EDGE state
+    {IdleHighTransitions, 1, on_state_idle_high},         // IDLE_HIGH state
+    {IdleLowTransitions, 1, on_state_idle_low},           // IDLE_LOW state
+    {RisingEdgeTransitions, 2, on_state_rising_edge},     // RISING_EDGE state
+    {FallingEdgeTransitions, 2, on_state_falling_edge}    // FALLING_EDGE state
 };
 
 // Initialize the edge detector

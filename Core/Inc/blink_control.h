@@ -25,6 +25,8 @@ typedef struct {
     uint16_t LED_Pin;       // GPIO pin for the LED
 } BlinkControl;
 
+// PUBLIC FUNCTIONS
+
 /**
  * @brief Initializes the BlinkControl FSM.
  *

@@ -5,8 +5,8 @@
  *      Author: apojo
  */
 
-#ifndef INC_DEBOUNCED_SWITCH_H_
-#define INC_DEBOUNCED_SWITCH_H_
+#ifndef INC_DEBOUNCER_H_
+#define INC_DEBOUNCER_H_
 
 #include "fsm.h"
 #include "timer.h"
@@ -24,6 +24,8 @@ typedef struct {
     GPIO_TypeDef *GPIOx;    // GPIO port for the switch
     uint16_t GPIO_Pin;      // GPIO pin for the switch
 } DebouncedSwitch;
+
+// PUBLIC FUNCTIONS
 
 /**
  * @brief Initializes the debounced switch FSM.
@@ -49,4 +51,4 @@ void debounced_switch_update(DebouncedSwitch *debounced_switch);
  */
 GPIO_PinState get_debounced_switch_state(DebouncedSwitch *debounced_switch);
 
-#endif /* INC_DEBOUNCED_SWITCH_H_ */
+#endif /* INC_DEBOUNCER_H_ */

@@ -18,7 +18,7 @@ void timer_start(Timer *timer, uint32_t duration_ms) {
 }
 
 /**
- * @brief Starts a timer for the specified duration in milliseconds.
+ * @brief Restarts a timer.
  */
 void timer_restart(Timer *timer) {
     timer->start_tick = HAL_GetTick();

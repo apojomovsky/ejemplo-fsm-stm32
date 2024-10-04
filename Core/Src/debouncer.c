@@ -5,7 +5,7 @@
  *      Author: apojo
  */
 
-#include "debounced_switch.h"
+#include <debouncer.h>
 #include "timer.h"
 
 // Condition functions for state transitions
@@ -35,11 +35,6 @@ static Transition ReleasedTransitions[] = {
     {is_button_pressed_and_timer_expired, SWITCH_PRESSED}
 };
 
-// on_state functions for each state
-void on_state_idle(void *context) {
-    // No specific actions for the idle state
-}
-
 void on_state_pressed(void *context) {
     DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
     timer_start(&debounced_switch->debounce_timer, 50);  // Start debounce timer
@@ -52,9 +47,9 @@ void on_state_released(void *context) {
 
 // FSM states with actions
 static FSMState DebouncedSwitchFSM[] = {
-    {IdleTransitions, 1, on_state_idle},           // SWITCH_IDLE state
-    {PressedTransitions, 1, on_state_pressed},     // SWITCH_PRESSED state
-    {ReleasedTransitions, 1, on_state_released}    // SWITCH_RELEASED state
+    {IdleTransitions, 1, NULL},                 // SWITCH_IDLE state, no action function is needed here, so we pass NULL
+    {PressedTransitions, 1, on_state_pressed},  // SWITCH_PRESSED state
+    {ReleasedTransitions, 1, on_state_released} // SWITCH_RELEASED state
 };
 
 // Initialize the debounced switch FSM

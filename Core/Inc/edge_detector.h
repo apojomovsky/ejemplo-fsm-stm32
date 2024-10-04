@@ -5,11 +5,11 @@
  *      Author: apojo
  */
 
-#ifndef INC_EDGE_FSM_H_
-#define INC_EDGE_FSM_H_
+#ifndef INC_EDGE_DETECTOR_H_
+#define INC_EDGE_DETECTOR_H_
 
+#include <debouncer.h>
 #include "fsm.h"
-#include "debounced_switch.h"
 
 // Enum for the edge detector states
 typedef enum {
@@ -24,6 +24,8 @@ typedef struct {
     FSM fsm;               // FSM instance for edge detection
     DebouncedSwitch *switch_instance;  // Reference to the debounced switch
 } EdgeDetector;
+
+// PUBLIC FUNCTIONS
 
 /**
  * @brief Initializes the edge detector FSM.
@@ -48,4 +50,4 @@ void edge_detector_update(EdgeDetector *edge_detector);
  */
 EdgeFSMState get_edge_detector_state(EdgeDetector *edge_detector);
 
-#endif /* INC_EDGE_FSM_H_ */
+#endif /* INC_EDGE_DETECTOR_H_ */

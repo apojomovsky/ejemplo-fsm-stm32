@@ -11,12 +11,14 @@
 #include "main.h"
 
 /**
- * @brief Timer structure that holds the start tick and timeout duration.
+ * @brief Timer structure.
  */
 typedef struct {
     uint32_t start_tick;
     uint32_t duration_ms;
 } Timer;
+
+// PUBLIC FUNCTIONS
 
 /**
  * @brief Starts a timer for the specified duration in milliseconds.

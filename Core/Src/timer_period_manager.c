@@ -2,23 +2,23 @@
 
 // Condition functions
 static int rising_edge_detected(void *context) {
-    TimerPeriodManagerFSM *period_manager = (TimerPeriodManagerFSM *)context;
+    TimerPeriodManager *period_manager = (TimerPeriodManager *)context;
     return get_edge_detector_state(period_manager->edge_detector) == RISING_EDGE;
 }
 
 // on_state functions for each state
 void on_state_period_1(void *context) {
-    TimerPeriodManagerFSM *period_manager = (TimerPeriodManagerFSM *)context;
+    TimerPeriodManager *period_manager = (TimerPeriodManager *)context;
     timer_update_duration(period_manager->timer, PERIOD_1);  // Set the timer to PERIOD_1
 }
 
 void on_state_period_2(void *context) {
-    TimerPeriodManagerFSM *period_manager = (TimerPeriodManagerFSM *)context;
+    TimerPeriodManager *period_manager = (TimerPeriodManager *)context;
     timer_update_duration(period_manager->timer, PERIOD_2);  // Set the timer to PERIOD_2
 }
 
 void on_state_period_3(void *context) {
-    TimerPeriodManagerFSM *period_manager = (TimerPeriodManagerFSM *)context;
+    TimerPeriodManager *period_manager = (TimerPeriodManager *)context;
     timer_update_duration(period_manager->timer, PERIOD_3);  // Set the timer to PERIOD_3
 }
 
@@ -43,7 +43,7 @@ static FSMState PeriodManagerStates[] = {
 };
 
 // Initialize the TimerPeriodManager FSM with predefined periods
-void timer_period_manager_fsm_init(TimerPeriodManagerFSM *period_manager, Timer *timer, EdgeDetector *edge_detector) {
+void timer_period_manager_fsm_init(TimerPeriodManager *period_manager, Timer *timer, EdgeDetector *edge_detector) {
     period_manager->timer = timer;
     period_manager->edge_detector = edge_detector;
 
@@ -55,6 +55,6 @@ void timer_period_manager_fsm_init(TimerPeriodManagerFSM *period_manager, Timer 
 }
 
 // Update the FSM
-void timer_period_manager_fsm_update(TimerPeriodManagerFSM *period_manager) {
+void timer_period_manager_fsm_update(TimerPeriodManager *period_manager) {
     fsm_update(&period_manager->fsm);
 }

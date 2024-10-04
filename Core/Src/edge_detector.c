@@ -5,7 +5,7 @@
  *      Author: apojo
  */
 
-#include "edge_fsm.h"
+#include <edge_detector.h>
 
 // Condition functions for edge detection FSM
 static int is_high(void *context) {

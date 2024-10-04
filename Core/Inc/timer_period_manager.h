@@ -1,9 +1,9 @@
-#ifndef INC_TIMER_PERIOD_MANAGER_FSM_H_
-#define INC_TIMER_PERIOD_MANAGER_FSM_H_
+#ifndef INC_TIMER_PERIOD_MANAGER_H_
+#define INC_TIMER_PERIOD_MANAGER_H_
 
+#include "edge_detector.h"
 #include "fsm.h"
 #include "timer.h"
-#include "edge_fsm.h"
 
 // Enum for the FSM states corresponding to the periods
 typedef enum {
@@ -22,7 +22,9 @@ typedef struct {
     FSM fsm;                    // FSM instance for period management
     Timer *timer;               // Pointer to the timer instance
     EdgeDetector *edge_detector;  // Pointer to the edge detector instance
-} TimerPeriodManagerFSM;
+} TimerPeriodManager;
+
+// PUBLIC FUNCTIONS
 
 /**
  * @brief Initializes the TimerPeriodManager FSM with predefined periods.
@@ -31,13 +33,13 @@ typedef struct {
  * @param timer Pointer to the timer instance.
  * @param edge_detector Pointer to the edge detector instance.
  */
-void timer_period_manager_fsm_init(TimerPeriodManagerFSM *period_manager, Timer *timer, EdgeDetector *edge_detector);
+void timer_period_manager_fsm_init(TimerPeriodManager *period_manager, Timer *timer, EdgeDetector *edge_detector);
 
 /**
  * @brief Updates the TimerPeriodManager FSM.
  *
  * @param period_manager Pointer to the TimerPeriodManagerFSM structure.
  */
-void timer_period_manager_fsm_update(TimerPeriodManagerFSM *period_manager);
+void timer_period_manager_fsm_update(TimerPeriodManager *period_manager);
 
-#endif /* INC_TIMER_PERIOD_MANAGER_FSM_H_ */
+#endif /* INC_TIMER_PERIOD_MANAGER_H_ */

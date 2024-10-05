@@ -24,7 +24,7 @@ void fsm_update(FSM *fsm) {
     unsigned long oldState = fsm->currentState;  // Store the current state before checking transitions
     FSMState currentState = fsm->states[fsm->currentState];
 
-    // Check all transitions
+    // Check all transitions (one for each of the potential next states)
     for (unsigned long i = 0; i < currentState.numTransitions; i++) {
         if (currentState.transitions[i].condition(fsm->context)) {  // Pass the context to the condition function
             fsm->currentState = currentState.transitions[i].nextState;  // Transition to the corresponding next state

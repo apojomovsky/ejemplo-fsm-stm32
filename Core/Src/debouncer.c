@@ -35,6 +35,8 @@ static Transition ReleasedTransitions[] = {
     {is_button_pressed_and_timer_expired, SWITCH_PRESSED}
 };
 
+
+// Action functions
 void on_state_pressed(void *context) {
     DebouncedSwitch *debounced_switch = (DebouncedSwitch *)context;
     timer_start(&debounced_switch->debounce_timer, 50);  // Start debounce timer

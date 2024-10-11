@@ -57,6 +57,6 @@ void blink_control_update(BlinkControl *blink_control) {
 }
 
 // Set blink period
-void set_blink_period(BlinkControl *blink_control, uint32_t period) {
+void blink_control_set_period(BlinkControl *blink_control, uint32_t period) {
     timer_update_duration(&blink_control->blink_timer, period);
 }

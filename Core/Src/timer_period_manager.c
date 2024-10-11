@@ -43,7 +43,7 @@ static FSMState PeriodManagerStates[] = {
 };
 
 // Initialize the TimerPeriodManager FSM with predefined periods
-void timer_period_manager_fsm_init(TimerPeriodManager *period_manager, Timer *timer, EdgeDetector *edge_detector) {
+void timer_period_manager_init(TimerPeriodManager *period_manager, Timer *timer, EdgeDetector *edge_detector) {
     period_manager->timer = timer;
     period_manager->edge_detector = edge_detector;
 
@@ -55,6 +55,6 @@ void timer_period_manager_fsm_init(TimerPeriodManager *period_manager, Timer *ti
 }
 
 // Update the FSM
-void timer_period_manager_fsm_update(TimerPeriodManager *period_manager) {
+void timer_period_manager_update(TimerPeriodManager *period_manager) {
     fsm_update(&period_manager->fsm);
 }

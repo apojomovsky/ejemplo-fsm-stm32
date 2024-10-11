@@ -105,8 +105,8 @@ int main(void)
   blink_control_init(&blink_control_led2, LED_2_GPIO_Port, LED_2_Pin, 0);
   edge_detector_init(&edge_detector1, &debounced_button1);
   edge_detector_init(&edge_detector2, &debounced_button2);
-  timer_period_manager_fsm_init(&period_manager1, &blink_control_led1.blink_timer, &edge_detector1);
-  timer_period_manager_fsm_init(&period_manager2, &blink_control_led2.blink_timer, &edge_detector2);
+  timer_period_manager_init(&period_manager1, &blink_control_led1.blink_timer, &edge_detector1);
+  timer_period_manager_init(&period_manager2, &blink_control_led2.blink_timer, &edge_detector2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -123,8 +123,8 @@ int main(void)
     edge_detector_update(&edge_detector2);
     blink_control_update(&blink_control_led1);
     blink_control_update(&blink_control_led2);
-    timer_period_manager_fsm_update(&period_manager1);
-    timer_period_manager_fsm_update(&period_manager2);
+    timer_period_manager_update(&period_manager1);
+    timer_period_manager_update(&period_manager2);
 
     // Put the processor to sleep during the remaining time until the tick rate is reached,
     // this allows us to save energy from otherwise wasted CPU cycles. The systick will wake up

@@ -33,9 +33,9 @@ typedef struct {
  * @param blink_control Pointer to BlinkControl structure.
  * @param LED_Port GPIO port of the LED.
  * @param LED_Pin GPIO pin of the LED.
- * @param initial_period Initial blink period in milliseconds.
+ * @param blink_period Blink period in milliseconds.
  */
-void blink_control_init(BlinkControl *blink_control, GPIO_TypeDef *LED_Port, uint16_t LED_Pin, uint32_t initial_period);
+void blink_control_init(BlinkControl *blink_control, GPIO_TypeDef *LED_Port, uint16_t LED_Pin, uint32_t blink_period);
 
 /**
  * @brief Updates the BlinkControl FSM.
@@ -50,7 +50,7 @@ void blink_control_update(BlinkControl *blink_control);
  * @param blink_control Pointer to BlinkControl structure.
  * @param period New blink period in milliseconds.
  */
-void set_blink_period(BlinkControl *blink_control, uint32_t period);
+void blink_control_set_period(BlinkControl *blink_control, uint32_t period);
 
 
 #endif /* INC_BLINK_CONTROL_H_ */

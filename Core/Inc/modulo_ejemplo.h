@@ -18,9 +18,9 @@
 * para que luego podamos usar en la FSM.       *
 ***********************************************/
 typedef enum {
-    ESTADO_1,       // Descripción del estado 1
-    ESTADO_2,       // Descripción del estado 2
-    ESTADO_3        // Descripción del estado 3
+    ESTADO_1,
+    ESTADO_2,
+    ESTADO_3
 } ModuloEjemploEstado;
 
 /***********************************************
@@ -30,9 +30,9 @@ typedef enum {
 ***********************************************/
 typedef struct {
     FSM fsm;                // Instancia de la FSM (detalle de implementación)
-    GPIO_TypeDef *Port;      // Puerto GPIO (si es necesario)
-    uint16_t Pin;            // Pin GPIO (si es necesario)
-    Timer *timer;            // Timer asociado al módulo (si es necesario)
+    GPIO_TypeDef *Port;     // Puerto GPIO (si fuese necesario)
+    uint16_t Pin;           // Pin GPIO (si fuese necesario)
+    Timer *timer;           // Timer asociado al módulo (si fuese necesario)
 } ModuloEjemplo;
 
 /***********************************************

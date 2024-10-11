@@ -27,19 +27,19 @@ typedef struct {
 // PUBLIC FUNCTIONS
 
 /**
- * @brief Initializes the TimerPeriodManager FSM with predefined periods.
+ * @brief Initializes the TimerPeriodManager module with predefined periods.
  *
  * @param period_manager Pointer to the TimerPeriodManagerFSM structure.
  * @param timer Pointer to the timer instance.
  * @param edge_detector Pointer to the edge detector instance.
  */
-void timer_period_manager_fsm_init(TimerPeriodManager *period_manager, Timer *timer, EdgeDetector *edge_detector);
+void timer_period_manager_init(TimerPeriodManager *period_manager, Timer *timer, EdgeDetector *edge_detector);
 
 /**
- * @brief Updates the TimerPeriodManager FSM.
+ * @brief Updates the TimerPeriodManager module.
  *
  * @param period_manager Pointer to the TimerPeriodManagerFSM structure.
  */
-void timer_period_manager_fsm_update(TimerPeriodManager *period_manager);
+void timer_period_manager_update(TimerPeriodManager *period_manager);
 
 #endif /* INC_TIMER_PERIOD_MANAGER_H_ */

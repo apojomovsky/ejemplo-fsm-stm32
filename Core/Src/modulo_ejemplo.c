@@ -18,7 +18,10 @@
  * @brief Condición para pasar del estado 1 al estado 2.
  */
 static int condicion_estado1_a_estado2(void *context) {
+	// Esta operacion de casteo se hace para poder acceder a los
+	// miembros de la estructura que define a nuestro modulo.
     ModuloEjemplo *ejemplo = (ModuloEjemplo *)context;
+    // Esta condición chequea que determinado pin se encuentre seteado
     return HAL_GPIO_ReadPin(ejemplo->Port, ejemplo->Pin) == GPIO_PIN_SET;
 }
 
@@ -35,8 +38,8 @@ static int condicion_estado2_a_estado3(void *context) {
  */
 static int condicion_estado2_a_estado1(void *context) {
     ModuloEjemplo *ejemplo = (ModuloEjemplo *)context;
-    // Una segunda condición que, si es verdadera, devuelve al Estado 1
-    return timer_has_expired(ejemplo->timer); // Ejemplo de uso de timer
+    // Esta condición chequea que el timer de la estructura haya expirado
+    return timer_has_expired(ejemplo->timer);
 }
 
 /**
@@ -71,14 +74,9 @@ void on_state_estado2(void *context) {
     timer_start(ejemplo->timer, 5000); // Iniciar un timer de 5 segundos
 }
 
-/**
- * @brief Acción al entrar en el estado 3.
- */
-void on_state_estado3(void *context) {
-    ModuloEjemplo *ejemplo = (ModuloEjemplo *)context;
-    // Ejemplo de acción: Cambiar el estado del pin GPIO a SET
-    HAL_GPIO_WritePin(ejemplo->Port, ejemplo->Pin, GPIO_PIN_SET);
-}
+// Donde esta la definición de on_state_estado3 ??
+// Cuando lleguemos al PASO7 vamos a enterarnos!
+
 
 /***********************************************
 *          PASO 6: DECLARAR TRANSICIONES       *
@@ -93,9 +91,11 @@ static Transition Estado1Transitions[] = {
 };
 
 // Transiciones desde ESTADO_2 (2 transiciones)
+// El Estado 2 tiene "dos flechas salientes", es decir, puede transicionar
+// a mas de un estado. Por ese motivo este array tiene dos entradas y no una.
 static Transition Estado2Transitions[] = {
     {condicion_estado2_a_estado3, ESTADO_3},  // Transición al estado 3
-    {condicion_estado2_a_estado1, ESTADO_1}   // Alternativa: volver al estado 1
+    {condicion_estado2_a_estado1, ESTADO_1}   // Transición al estado 1
 };
 
 // Transiciones desde ESTADO_3
@@ -110,10 +110,10 @@ static Transition Estado3Transitions[] = {
 ***********************************************/
 
 static FSMState ModuloEjemploEstados[] = {
-    {Estado1Transitions, 1, on_state_estado1},  // Estado 1: tiene 1 transición
-    {Estado2Transitions, 2, on_state_estado2},  // Estado 2: tiene 2 transiciones
-    {Estado3Transitions, 1, on_state_estado3}   // Estado 3: tiene 1 transición
-};
+    {Estado1Transitions, 1, on_state_estado1},  // Estado 1: tiene 1 transición y ejecuta una acción
+    {Estado2Transitions, 2, on_state_estado2},  // Estado 2: tiene 2 transiciones y ejecuta una acción
+    {Estado3Transitions, 1, NULL}               // Estado 3: tiene 1 transición y no ejecuta ninguna acción, por lo que podremos
+};                                              // evitar la definición de una función vacía y simplemente pasarle aquí NULL.
 
 /***********************************************
 *         PASO 8: INICIALIZAR EL MÓDULO        *
